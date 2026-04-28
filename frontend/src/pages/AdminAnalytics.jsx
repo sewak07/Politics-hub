@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import AdminSidebar from "../components/AdminSidebar";
 
 export default function AdminAnalytics() {
   const navigate = useNavigate();
@@ -45,54 +46,15 @@ export default function AdminAnalytics() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white flex overflow-hidden">
+      
 
-      {/* SIDEBAR */}
-      <aside className="w-64 bg-slate-900 border-r border-slate-800 p-6 h-screen sticky top-0 flex flex-col">
+      <div className="min-h-screen bg-slate-950 text-white flex overflow-hidden">
+        <AdminSidebar user={user} />
 
-        {/* HEADER */}
-        <div>
-          <h1 className="text-xl font-bold tracking-wide text-white">
-            Politics Hub
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Admin Intelligence Panel
-          </p>
-        </div>
-
-        {/* NAV */}
-        <div className="mt-8 space-y-2 text-sm flex-1">
-          <button
-            onClick={() => navigate("/admin")}
-            className="w-full text-left px-3 py-2 rounded-md text-slate-400 hover:bg-slate-800"
-          >
-            Posts Management
-          </button>
-
-          <button className="w-full text-left px-3 py-2 rounded-md bg-slate-800">
-            Analytics
-          </button>
-
-          {user.role === "superadmin" && (
-            <button
-              onClick={() => navigate("/superadmin")}
-              className="w-full text-left px-3 py-2 rounded-md text-slate-400 hover:bg-slate-800"
-            >
-              Super Admin
-            </button>
-          )}
-        </div>
-
-        {/* FOOTER */}
-        <div className="pt-6 border-t border-slate-800">
-          <p className="text-sm text-blue-400 font-medium">
-            Admin Access
-          </p>
-          <p className="text-xs text-slate-500 mt-1">
-            Content moderation panel
-          </p>
-        </div>
-
-      </aside>
+        <main className="flex-1 p-8 space-y-8 h-screen overflow-y-auto">
+          {/* analytics content */}
+        </main>
+      </div>
 
       {/* MAIN */}
       <main className="flex-1 p-8 space-y-8 h-screen overflow-y-auto">
