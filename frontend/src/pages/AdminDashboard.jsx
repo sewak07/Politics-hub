@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiMenu } from "react-icons/fi";
 import SearchBar from "../components/SearchBar";
 import api from "../api/axios";
+import AdminSidebar from "../components/AdminSidebar";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [posts, setPosts] = useState([]);
-  const [stats, setStats] = useState({
-    totalPosts: 0,
-    totalLikes: 0,
-  });
-  const [likesByAdmin, setLikesByAdmin] = useState([]);
   const [search, setSearch] = useState("");
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -21,9 +19,7 @@ export default function AdminDashboard() {
       navigate("/");
       return;
     }
-
     fetchPosts();
-    fetchStats();
   }, []);
 
   const fetchPosts = async () => {
@@ -32,21 +28,6 @@ export default function AdminDashboard() {
       setPosts(res.data.posts || []);
     } catch (err) {
       console.log("FETCH POSTS ERROR:", err);
-    }
-  };
-
-  const fetchStats = async () => {
-    try {
-      const res = await api.get("/admin/stats");
-
-      setStats({
-        totalPosts: res.data.totalPosts || 0,
-        totalLikes: res.data.totalLikes || 0,
-      });
-
-      setLikesByAdmin(res.data.likesByAdmin || []);
-    } catch (err) {
-      console.log("FETCH STATS ERROR:", err);
     }
   };
 
@@ -61,7 +42,6 @@ export default function AdminDashboard() {
 
   const filteredPosts = posts.filter((post) => {
     const q = search.toLowerCase();
-
     return (
       post.title?.toLowerCase().includes(q) ||
       post.category?.toLowerCase().includes(q) ||
@@ -73,73 +53,54 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-slate-900 text-slate-200 flex">
 
       {/* SIDEBAR */}
-      <aside className="w-64 bg-slate-950 border-r border-slate-800 p-6 flex flex-col">
-        <div>
-          <h1 className="text-xl font-semibold tracking-wide">
-            PoliticsHub
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Admin Control Panel
-          </p>
-        </div>
+      <div
+        className={`fixed md:static inset-y-0 left-0 z-40 w-64 bg-slate-950 transform transition-transform
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+      >
+        <AdminSidebar user={user} />
+      </div>
 
-        <nav className="mt-10 space-y-2 text-sm">
-          <button className="w-full text-left px-3 py-2 rounded-md bg-slate-800">
-            Posts Management
-          </button>
-
-          <button className="w-full text-left px-3 py-2 rounded-md text-slate-400 hover:bg-slate-800">
-            Comments
-          </button>
-
-          <button
-            onClick={() => navigate("/admin/analytics")}
-            className="w-full text-left px-3 py-2 rounded-md text-slate-400 hover:bg-slate-800"
-          >
-            Analytics
-          </button>
-
-          {/* SUPERADMIN ONLY BUTTON */}
-          {user.role === "superadmin" && (
-            <button
-              onClick={() => navigate("/superadmin")}
-              className="w-full text-left px-3 py-2 rounded-md text-slate-400 hover:bg-slate-800"
-            >
-              Super Admin
-            </button>
-          )}
-        </nav>
-
-        <div className="mt-auto pt-6 border-t border-slate-800">
-          <p className="text-sm text-blue-400 font-medium">
-            Admin Access
-          </p>
-          <p className="text-xs text-slate-500">
-            Content moderation panel
-          </p>
-        </div>
-      </aside>
+      {/* OVERLAY (mobile) */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
       {/* MAIN */}
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
 
         {/* HEADER */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-semibold">
-              Post Management
-            </h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Moderate, edit, and control published content
-            </p>
+        <div className="mb-8">
+          {/* Top row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                className="md:hidden text-xl text-slate-300"
+                onClick={() => setSidebarOpen(true)}
+                aria-label="Open sidebar"
+              >
+                <FiMenu />
+              </button>
+
+              <h1 className="text-xl md:text-2xl font-semibold">
+                Post Management
+              </h1>
+            </div>
+
+            <button
+              onClick={() => navigate("/create-post")}
+              className="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-md text-sm font-medium text-white transition"
+            >
+              + New Post
+            </button>
           </div>
 
-          <button
-            onClick={() => navigate("/create-post")}
-            className="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-md text-sm font-medium text-white transition"
-          >
-            + New Post
-          </button>
+          {/* Sub text */}
+          <p className="text-sm text-slate-400 mt-2 max-w-xl">
+            Moderate, edit, and control published content
+          </p>
         </div>
 
         <SearchBar
@@ -147,10 +108,9 @@ export default function AdminDashboard() {
           onSearch={setSearch}
         />
 
-
-        {/* POSTS LIST */}
-        <div className="bg-slate-950 border border-slate-800 rounded-lg overflow-hidden mt-4">
-          <table className="w-full text-sm">
+        {/* TABLE */}
+        <div className="bg-slate-950 border border-slate-800 rounded-lg overflow-x-auto mt-4">
+          <table className="min-w-[700px] w-full text-sm">
             <thead className="bg-slate-900 text-slate-300 text-xs uppercase">
               <tr>
                 <th className="text-left px-6 py-4">Title</th>
@@ -162,22 +122,12 @@ export default function AdminDashboard() {
 
             <tbody className="divide-y divide-slate-800">
               {filteredPosts.map((post) => (
-                <tr
-                  key={post._id}
-                  className="hover:bg-slate-900/60 transition"
-                >
-                  <td className="px-6 py-4 text-slate-100 font-medium">
-                    {post.title}
-                  </td>
-
-                  <td className="px-6 py-4 text-slate-400">
-                    {post.category}
-                  </td>
-
+                <tr key={post._id} className="hover:bg-slate-900/60">
+                  <td className="px-6 py-4 font-medium">{post.title}</td>
+                  <td className="px-6 py-4 text-slate-400">{post.category}</td>
                   <td className="px-6 py-4 text-slate-400">
                     {post.author?.username}
                   </td>
-
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <button
@@ -186,7 +136,6 @@ export default function AdminDashboard() {
                       >
                         View
                       </button>
-
                       <button
                         onClick={() => deletePost(post._id)}
                         className="px-3 py-1.5 text-xs rounded-md bg-red-600 hover:bg-red-500 text-white"
@@ -199,8 +148,6 @@ export default function AdminDashboard() {
               ))}
             </tbody>
           </table>
-
-
 
           {filteredPosts.length === 0 && (
             <div className="p-10 text-center text-slate-500">

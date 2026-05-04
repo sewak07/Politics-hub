@@ -26,7 +26,7 @@ export default function CategoryActivity({ logs, range }) {
 
       if (!isRealPost) return false;
 
-      // 🔥 APPLY TIME FILTER
+      // APPLY TIME FILTER
       if (cutoff && new Date(log.createdAt) < cutoff) {
         return false;
       }

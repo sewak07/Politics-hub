@@ -9,7 +9,7 @@ export const getActivityLogs = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    // 🛡️ HARD SAFE FILTER (prevents dashboard crash)
+    // HARD SAFE FILTER (prevents dashboard crash)
     const safeLogs = logs
       .filter((log) => log && log.action && log.message)
       .map((log) => ({

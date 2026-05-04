@@ -8,10 +8,11 @@ import {
   getAdminStats,
 } from "../controller/adminController.js";
 import { getActivityLogs } from "../controller/activityController.js";
+import { getAllCommentsForAdmin } from "../controller/commentController.js";
 
 const router = express.Router();
 
-// 🔐 SUPERADMIN ONLY
+// SUPERADMIN ONLY
 
 router.get(
   "/users",
@@ -49,6 +50,13 @@ router.get(
   authMiddleware,
   roleMiddleware("superadmin","admin"),
   getActivityLogs
+);
+
+router.get(
+  "/comments",
+  authMiddleware,
+  roleMiddleware("superadmin", "admin"),
+  getAllCommentsForAdmin
 );
 
 export default router;

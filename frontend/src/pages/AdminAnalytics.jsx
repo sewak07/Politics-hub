@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiMenu } from "react-icons/fi";
 import api from "../api/axios";
 import AdminSidebar from "../components/AdminSidebar";
+import { FiTrendingUp, FiAward, FiThumbsUp, FiGrid } from "react-icons/fi";
 
 export default function AdminAnalytics() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+
   const [data, setData] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
@@ -25,166 +29,139 @@ export default function AdminAnalytics() {
     }
   };
 
-  if (!data)
+  if (!data) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
-        <div className="animate-pulse text-slate-400">Loading analytics...</div>
-      </div>
-    );
-
-  function SidebarItem({ label, onClick, active }) {
-    return (
-      <div
-        onClick={onClick}
-        className={`cursor-pointer px-3 py-2 rounded-md ${active ? "bg-slate-800" : "hover:bg-slate-800"
-          }`}
-      >
-        {label}
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400 animate-pulse">
+        Loading analytics…
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex overflow-hidden">
-      
+    <div className="min-h-screen bg-slate-950 text-white flex">
 
-      <div className="min-h-screen bg-slate-950 text-white flex overflow-hidden">
+      {/* SIDEBAR */}
+      <div
+        className={`fixed md:static inset-y-0 left-0 z-40 w-64 bg-slate-950 transform transition-transform
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+      >
         <AdminSidebar user={user} />
-
-        <main className="flex-1 p-8 space-y-8 h-screen overflow-y-auto">
-          {/* analytics content */}
-        </main>
       </div>
 
+      {/* OVERLAY */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* MAIN */}
-      <main className="flex-1 p-8 space-y-8 h-screen overflow-y-auto">
+      <main className="flex-1 p-4 md:p-8 space-y-8 overflow-y-auto">
 
         {/* HEADER */}
-        <div>
-          <h1 className="text-2xl font-semibold">Analytics Dashboard</h1>
-          <p className="text-sm text-slate-400">
+        <div className="mb-4">
+          <div className="flex items-center gap-3">
+            <button
+              className="md:hidden text-xl text-slate-300"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <FiMenu />
+            </button>
+
+            <h1 className="text-xl md:text-2xl font-semibold">
+              Analytics Dashboard
+            </h1>
+          </div>
+
+          <p className="text-sm text-slate-400 mt-2 max-w-xl">
             Real-time platform performance insights
           </p>
         </div>
 
         {/* TOP CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card label="Posts" value={data.totalPosts} />
           <Card label="Likes" value={data.totalLikes} accent />
           <Card label="Engagement Rate" value={data.engagementRate} />
         </div>
 
         {/* SECOND ROW */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <MiniCard title="Users Today" value={data.newUsersToday} />
           <MiniCard title="Users This Week" value={data.newUsersWeek} />
           <MiniCard title="Peak Hour" value={`${data.peakHour ?? "--"}:00`} />
-
         </div>
 
         {/* TRENDING POSTS */}
-        <Section title="🔥 Trending Posts">
+        <Section
+          title={
+            <span className="flex items-center gap-2">
+              <FiTrendingUp className="text-red-400" />
+              Trending Posts
+            </span>
+          }
+        >
           <div className="space-y-2">
             {data.trendingPosts.map((p, i) => (
-              <div
-                key={i}
-                className="flex justify-between items-center bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 hover:bg-slate-800 transition"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-slate-500 text-sm">{i + 1}</span>
-                  <span className="font-medium">{p.title}</span>
-                </div>
-                <span className="text-pink-400 font-semibold">
-                  ❤️ {p.likesCount}
-                </span>
-              </div>
+              <Row key={i} left={`${i + 1}. ${p.title}`} right={`❤️ ${p.likesCount}`} />
             ))}
           </div>
         </Section>
 
-        {/* TOP ADMINS by posts*/}
-        <Section title="🏆 Top Admins by Posts">
+        {/* TOP ADMINS BY POSTS */}
+        <Section
+          title={
+            <span className="flex items-center gap-2">
+              <FiAward className="text-yellow-400" />
+              Top Admins by Posts
+            </span>
+          }
+        >
           <div className="space-y-2">
             {data.postsByAdmin.map((a, i) => (
-              <div
-                key={i}
-                className="flex justify-between items-center bg-slate-900 border border-slate-800 rounded-lg px-4 py-3"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="text-slate-500 text-sm">{i + 1}</span>
-                  {a.username}
-                </span>
-                <span className="text-blue-400 font-semibold">
-                  {a.total}
-                </span>
-              </div>
+              <Row key={i} left={`${i + 1}. ${a.username}`} right={a.total} />
             ))}
           </div>
         </Section>
 
-        {/*top admin by likes*/}
-        <Section title="🔥 Top Admins by Likes">
+        {/* TOP ADMINS BY LIKES */}
+        <Section
+          title={
+            <span className="flex items-center gap-2">
+              <FiThumbsUp className="text-pink-400" />
+              Top Admins by Likes
+            </span>
+          }
+        >
           <div className="space-y-2">
             {data.rankedAdminsByLikes.map((a, i) => (
-              <div
+              <Row
                 key={i}
-                className="flex justify-between items-center bg-slate-900 border border-slate-800 rounded-lg px-4 py-3"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="text-slate-500 text-sm">{i + 1}</span>
-                  {a.username}
-                </span>
-
-                <span className="text-pink-400 font-semibold flex items-center gap-1">
-                  <span>{a.totalLikes ?? 0}</span>
-                  <span className="text-slate-500 text-xs">likes</span>
-                </span>
-              </div>
+                left={`${i + 1}. ${a.username}`}
+                right={`❤️ ${a.totalLikes ?? 0}`}
+              />
             ))}
           </div>
         </Section>
 
-        {/* top categories by likes */}
-        <Section title="🗂️ Top Categories by Posts">
+        {/* TOP CATEGORIES */}
+        <Section
+          title={
+            <span className="flex items-center gap-2">
+              <FiGrid className="text-blue-400" />
+              Top Categories
+            </span>
+          }
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {data.rankedCategories.map((c) => (
-              <div
+            {data.rankedCategories.map((c, i) => (
+              <Row
                 key={c.category}
-                className="flex justify-between bg-slate-900 border border-slate-800 rounded-lg px-4 py-3"
-              >
-                <span>
-                  {c.rank}. {c.category}
-                </span>
-
-                <span className="text-emerald-400 font-semibold">
-                  {c.total} posts
-                </span>
-              </div>
+                left={`${i + 1}. ${c.category}`}
+                right={`${c.total} posts`}
+              />
             ))}
-          </div>
-        </Section>
-
-        {/*top categories by posts */}
-        {/* CATEGORIES BY LIKES */}
-        <Section title="🔥 Top Categories by Likes">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {data.rankedCategories
-              ?.sort((a, b) => (b.totalLikes || 0) - (a.totalLikes || 0))
-              .map((c, i) => (
-                <div
-                  key={c.category}
-                  className="flex justify-between bg-slate-900 border border-slate-800 rounded-lg px-4 py-3"
-                >
-                  <span>
-                    {i + 1}. {c.category}
-                  </span>
-
-                  <span className="text-pink-400 font-semibold">
-                    ❤️ {c.totalLikes || 0}
-                  </span>
-                </div>
-              ))}
           </div>
         </Section>
 
@@ -225,15 +202,11 @@ function Section({ title, children }) {
   );
 }
 
-function SidebarItem({ label, active }) {
+function Row({ left, right }) {
   return (
-    <div
-      className={`px-3 py-2 rounded-md cursor-pointer transition ${active
-        ? "bg-slate-800 text-white"
-        : "text-slate-400 hover:bg-slate-800"
-        }`}
-    >
-      {label}
+    <div className="flex justify-between items-center bg-slate-900 border border-slate-800 rounded-lg px-4 py-3">
+      <span className="text-sm">{left}</span>
+      <span className="font-semibold text-slate-300">{right}</span>
     </div>
   );
 }

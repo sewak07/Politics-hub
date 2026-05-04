@@ -76,7 +76,7 @@ export const getAdminStats = async (req, res) => {
       last1y: new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000),
     };
 
-    // ================= USERS =================
+    // USERS
     const totalUsers = await User.countDocuments();
     const totalAdmins = await User.countDocuments({ role: "admin" });
 
@@ -88,7 +88,7 @@ export const getAdminStats = async (req, res) => {
       createdAt: { $gte: timeRanges.last7d },
     });
 
-    // ================= POSTS =================
+    // POSTS 
     const totalPosts = await Post.countDocuments();
 
     const posts24h = await Post.countDocuments({
@@ -103,7 +103,7 @@ export const getAdminStats = async (req, res) => {
       createdAt: { $gte: timeRanges.last30d },
     });
 
-    // ================= LIKES =================
+    // LIKES 
     const likesAgg = await Post.aggregate([
       {
         $project: {
@@ -126,13 +126,13 @@ export const getAdminStats = async (req, res) => {
 
     const totalLikes = likesAgg[0]?.totalLikes || 0;
 
-    // ================= ENGAGEMENT =================
+    // ENGAGEMENT 
     const engagement = totalLikes;
 
     const engagementRate =
       totalPosts > 0 ? (engagement / totalPosts).toFixed(2) : 0;
 
-    // ================= POSTS BY ADMIN =================
+    // POSTS BY ADMIN 
     const postsByAdmin = await Post.aggregate([
       {
         $group: {
@@ -183,7 +183,7 @@ export const getAdminStats = async (req, res) => {
       },
     ]);
 
-    // ================= CATEGORY STATS =================
+    // CATEGORY STATS 
     const categoryStats = await Post.aggregate([
       {
         $project: {
@@ -251,7 +251,7 @@ export const getAdminStats = async (req, res) => {
       { $sort: { totalLikes: -1 } },
     ]); 
 
-    // ================= TRENDING POSTS =================
+    //TRENDING POSTS
     const trendingPosts = await Post.aggregate([
       {
         $project: {
@@ -270,7 +270,7 @@ export const getAdminStats = async (req, res) => {
       { $limit: 5 },
     ]);
 
-    // ================= PEAK HOUR =================
+    // PEAK HOUR 
     const peakHourData = await Post.aggregate([
       {
         $project: {
@@ -289,7 +289,7 @@ export const getAdminStats = async (req, res) => {
 
     const peakHour = peakHourData[0]?._id ?? null;
 
-    // ================= LIKE BY ADMIN (FIXED ORDER) =================
+    // LIKE BY ADMIN (FIXED ORDER)
     const likesByAdmin = await Post.aggregate([
       {
         $group: {
@@ -324,7 +324,7 @@ export const getAdminStats = async (req, res) => {
       },
     ]);
 
-    // ================= RANKINGS =================
+    // RANKINGS
     const rankedAdminsByPosts = postsByAdmin
       .slice()
       .sort((a, b) => b.total - a.total)
@@ -339,7 +339,7 @@ export const getAdminStats = async (req, res) => {
       .sort((a, b) => b.totalLikes - a.totalLikes)
       .map((a, i) => ({ ...a, rank: i + 1 }));
 
-    // ================= RESPONSE =================
+    // RESPONSE
     res.json({
       totalUsers,
       totalAdmins,

@@ -25,9 +25,12 @@ export default function Header() {
     navigate("/login", { replace: true });
   };
 
-  const handleSearch = () => {
-    if (search.trim()) {
-      navigate(`/?search=${search}`);
+  // ✅ FIXED SEARCH (safe + always latest value)
+  const handleSearchClick = () => {
+    const query = search?.trim();
+
+    if (query) {
+      navigate(`/?search=${encodeURIComponent(query)}`);
     }
   };
 
@@ -64,17 +67,17 @@ export default function Header() {
         {/* RIGHT SECTION */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-5 w-full sm:w-auto">
 
-          {/* SEARCH */}
+          {/* SEARCH (FIXED ONLY HERE) */}
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <div className="flex-1 sm:flex-none">
               <SearchBar
                 placeholder="Search articles..."
-                onSearch={(value) => setSearch(value)}
+                onSearch={setSearch}
               />
             </div>
 
             <button
-              onClick={handleSearch}
+              onClick={handleSearchClick}
               className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium 
               text-red-700 border border-red-700 
               hover:bg-red-700 hover:text-white 
@@ -86,7 +89,6 @@ export default function Header() {
 
           {/* AUTH */}
           {!user ? (
-
             <div className="flex justify-end sm:justify-start w-full sm:w-auto">
               <button
                 onClick={() => navigate("/login")}
@@ -98,7 +100,6 @@ export default function Header() {
                 Sign in
               </button>
             </div>
-            
           ) : (
             <div className="relative w-full sm:w-auto">
 
@@ -110,14 +111,12 @@ export default function Header() {
                 }}
                 className="flex items-center justify-between sm:justify-start gap-3 px-3 py-2 cursor-pointer border sm:border-0 rounded-md sm:rounded-none"
               >
-                {/* PROFILE ICON */}
                 <div className="w-8 h-8 rounded-full bg-neutral-900 flex items-center justify-center shrink-0">
                   <span className="text-white text-sm font-semibold">
                     {user.username?.charAt(0).toUpperCase()}
                   </span>
                 </div>
 
-                {/* USER INFO */}
                 <div className="flex flex-col leading-tight flex-1 sm:flex-none">
                   <span className="text-sm font-medium text-neutral-900 truncate">
                     {user.username}
@@ -127,7 +126,6 @@ export default function Header() {
                   </span>
                 </div>
 
-                {/* ARROW */}
                 <svg
                   className="w-4 h-4 text-neutral-400 shrink-0"
                   fill="none"

@@ -69,7 +69,7 @@ export const getPosts = async (req, res) => {
       .limit(limit)
       .lean();
 
-    // 🔥 FIX: user detection (works even after refresh)
+    // FIX: user detection (works even after refresh)
     const userId = req.user?._id?.toString() || req.user?.id?.toString();
 
     const updatedPosts = posts.map((post) => ({
@@ -158,18 +158,15 @@ export const updatePost = async (req, res) => {
         public_id: file.filename || null,
       }));
 
-      // OPTION 1: replace old media completely
+      // replace old media completely
       post.media = newMedia;
-
-      // OPTION 2 (alternative): append instead of replace
-      // post.media = [...post.media, ...newMedia];
     }
 
 
 
     const updated = await post.save();
 
-   // 🔥 LOG
+   // LOG
     await createActivityLog({
       action: "POST_UPDATED",
       message: `Updated post "${updated.title}"`,
@@ -205,9 +202,6 @@ export const deletePost = async (req, res) => {
       actor: req.user._id,
       post: post._id,
     });
-
-
-
 
     res.json({ message: "Post deleted" });
 

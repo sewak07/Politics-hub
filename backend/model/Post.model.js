@@ -54,7 +54,6 @@ const postSchema = new mongoose.Schema(
       index: true,
     },
 
-    // ✅ SAFE DEFAULT ADDED (IMPORTANT FIX)
     likes: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "User",
@@ -69,7 +68,7 @@ const postSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ SAFE VIRTUAL (NO CRASH EVER)
+// SAFE VIRTUAL 
 postSchema.virtual("likeCount").get(function () {
   if (!Array.isArray(this.likes)) return 0;
   return this.likes.length;

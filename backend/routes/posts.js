@@ -16,13 +16,13 @@ import optionalAuth from "../middleware/optionalAuth.js";
 
 const router = express.Router();
 
-// 🌍 PUBLIC ROUTES (FIXED)
+// PUBLIC ROUTES 
 router.get("/", optionalAuth, getPosts);
 router.get("/liked", authMiddleware, getLikedPosts);
 router.get("/:id",optionalAuth, getPostById);
 
 
-// 🧠 CREATE POST
+// CREATE POST
 router.post(
   "/",
   authMiddleware,
@@ -31,7 +31,7 @@ router.post(
   createPost
 );
 
-// ✏️ UPDATE POST
+// UPDATE POST
 router.put(
   "/:id",
   authMiddleware,
@@ -40,7 +40,7 @@ router.put(
   updatePost
 );
 
-// 🗑 DELETE POST
+// DELETE POST
 router.delete(
   "/:id",
   authMiddleware,
@@ -48,7 +48,7 @@ router.delete(
   deletePost
 );
 
-// ❤️ LIKE / UNLIKE
+// LIKE / UNLIKE
 router.patch("/:id/like", authMiddleware, toggleLikePost);
 
 

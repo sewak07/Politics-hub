@@ -9,7 +9,7 @@ import PostPage from "./pages/PostPage";
 import ActivityLog from "./pages/ActivityLog";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import LikedPosts from "./pages/LikedPosts";
-
+import CommentTracker from "./pages/CommentTracker";
 export default function App() {
   return (
     <BrowserRouter>
@@ -25,6 +25,7 @@ export default function App() {
         <Route path="/create-post" element={<CreatePost />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
         <Route path="/liked-posts" element={<LikedPosts />} />
+        <Route path="/admin/comments" element={<CommentTracker />} />
       </Routes>
     </BrowserRouter>
   );

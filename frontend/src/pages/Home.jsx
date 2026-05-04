@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useSearchParams, Link } from "react-router-dom";
 import api from "../api/axios";
 
 import TopBar from "../components/TopBar";
@@ -11,6 +11,9 @@ import EmptyState from "../components/EmptyState";
 export default function Home() {
   const { category } = useParams();
 
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get("search") || "";
+
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,6 +22,9 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
 
   const [animatingLike, setAnimatingLike] = useState(null);
+  
+  
+
 
   const observerRef = useRef();
 
@@ -28,10 +34,15 @@ export default function Home() {
       setLoading(true);
       setError("");
 
-      const url =
-        category && category !== "all"
-          ? `/posts?category=${category}&page=${pageNumber}`
-          : `/posts?page=${pageNumber}`;
+      let url = `/posts?page=${pageNumber}`;
+
+      if (category && category !== "all") {
+        url += `&category=${category}`;
+      }
+
+      if (searchQuery) {
+        url += `&search=${encodeURIComponent(searchQuery)}`;
+      }
 
       const res = await api.get(url);
 
@@ -50,18 +61,16 @@ export default function Home() {
     }
   };
 
-  // INIT + CATEGORY CHANGE
   useEffect(() => {
     setPosts([]);
     setPage(1);
     setHasMore(true);
-  }, [category]);
+  }, [category, searchQuery]);
 
   useEffect(() => {
     loadPosts(page);
-  }, [page, category]);
+  }, [page, category, searchQuery]);
 
-  // INFINITE SCROLL
   const lastPostRef = (node) => {
     if (loading) return;
 
@@ -76,13 +85,14 @@ export default function Home() {
     if (node) observerRef.current.observe(node);
   };
 
-  // LIKE TOGGLE
+  
+  // like toggle
   const toggleLike = async (postId) => {
     try {
       setAnimatingLike(postId);
 
       const res = await api.patch(`/posts/${postId}/like`);
-
+      
       setPosts((prev) =>
         prev.map((post) =>
           post._id === postId
@@ -102,7 +112,7 @@ export default function Home() {
     }
   };
 
-  // SKELETON
+  // skeleton
   const SkeletonCard = () => (
     <div className="animate-pulse border border-neutral-200 rounded-xl overflow-hidden bg-white">
       <div className="h-56 bg-neutral-200" />
@@ -124,14 +134,12 @@ export default function Home() {
       <Header />
       <CategoryNav />
 
-      {/* ERROR */}
       {error && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
           <ErrorBanner message={error} />
         </div>
       )}
 
-      {/* POSTS */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {posts.length === 0 && !loading && !error && (
           <div className="mt-24 sm:mt-32">
@@ -140,11 +148,11 @@ export default function Home() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
-          {/* SKELETON */}
           {loading &&
-            Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+            Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
 
-          {/* POSTS */}
           {posts.map((post, index) => {
             const isLast = index === posts.length - 1;
 
@@ -155,7 +163,6 @@ export default function Home() {
                 ref={isLast ? lastPostRef : null}
                 className="group bg-white border border-neutral-200 rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300"
               >
-                {/* IMAGE */}
                 <div className="relative overflow-hidden">
                   {post.media?.[0]?.url ? (
                     <img
@@ -174,7 +181,6 @@ export default function Home() {
                   </span>
                 </div>
 
-                {/* CONTENT */}
                 <div className="p-4 sm:p-5 flex flex-col gap-2 sm:gap-3">
                   <h2 className="text-red-700 text-base sm:text-lg font-semibold group-hover:text-red-600 leading-snug">
                     {post.title}
@@ -184,7 +190,6 @@ export default function Home() {
                     {post.content}
                   </p>
 
-                  {/* AUTHOR + DATE */}
                   <div className="flex justify-between text-[11px] sm:text-xs text-neutral-500 pt-2 sm:pt-3 border-t">
                     <span className="truncate max-w-[120px]">
                       {post.author?.username}
@@ -194,7 +199,6 @@ export default function Home() {
                     </span>
                   </div>
 
-                  {/* LIKE SECTION */}
                   <div className="flex items-center justify-between pt-2">
                     <button
                       onClick={(e) => {
@@ -204,9 +208,7 @@ export default function Home() {
                       className="flex items-center gap-2 text-sm sm:text-xs active:scale-95 transition"
                     >
                       <span
-                        className={`text-xl sm:text-lg transition-transform duration-300 ${animatingLike === post._id
-                            ? "scale-150"
-                            : "scale-100"
+                        className={`text-xl sm:text-lg transition-transform duration-300 ${animatingLike === post._id ? "scale-150" : "scale-100"
                           } ${post.isLiked ? "text-red-500" : "text-neutral-400"
                           }`}
                       >
@@ -220,6 +222,7 @@ export default function Home() {
                   </div>
                 </div>
               </Link>
+              
             );
           })}
         </div>
